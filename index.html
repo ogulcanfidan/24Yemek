@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kampanya Analizi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: calc(100% - 40px);
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .explain-btn {
+            position: absolute;
+            right: 5px;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            width: 25px;
+            height: 25px;
+            background-color: #b3d7ff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .explanation {
+            display: none;
+            background: #e9ecef;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+        }
+        .reward-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .reward-buttons button {
+            width: 48%;
+            padding: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        .reward-buttons .product-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .reward-buttons .discount-btn {
+            background-color: #839bbb;
+            color: white;
+        }
+        .reward-buttons button.active {
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .result-item {
+            background: #e9ecef;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kampanya Analizi</h1>
+        <div class="reward-buttons">
+            <button class="product-btn active" onclick="showProductForm()">Ürün İkramı</button>
+            <button class="discount-btn" onclick="showDiscountForm()">İndirim</button>
+        </div>
+        <div id="product-form">
+            <div class="form-group">
+                <label for="productCost">İkram Edilecek Ürün Maliyeti (TL)
+                    <button class="explain-btn" onclick="toggleExplanation('productCostExplanation')">?</button>
+                </label>
+                <input type="number" id="productCost" value="10">
+                <div id="productCostExplanation" class="explanation">Her bir ürün için maliyet (örnek: kahve)</div>
+            </div>
+        </div>
+        <div id="discount-form" style="display:none;">
+            <div class="form-group">
+                <label for="avgBill">Tahmini Ortalama Hesap (TL)
+                    <button class="explain-btn" onclick="toggleExplanation('avgBillExplanation')">?</button>
+                </label>
+                <input type="number" id="avgBill" value="100">
+                <div id="avgBillExplanation" class="explanation">Müşterinin ödeyeceği tahmini ortalama hesap tutarı</div>
+            </div>
+            <div class="form-group">
+                <label for="discountRate">İndirim Oranı (%)
+                    <button class="explain-btn" onclick="toggleExplanation('discountRateExplanation')">?</button>
+                </label>
+                <input type="number" step="0.01" id="discountRate" value="10">
+                <div id="discountRateExplanation" class="explanation">Müşteriye uygulanacak indirim oranı</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="campaignDays">Kampanya Süresi (Gün)</label>
+            <input type="number" id="campaignDays" value="7">
+        </div>
+        <div class="form-group">
+            <label for="maxCustomers">Günlük Maksimum Müşteri
+                <button class="explain-btn" onclick="toggleExplanation('maxCustomersExplanation')">?</button>
+            </label>
+            <input type="number" id="maxCustomers" value="50">
+            <div id="maxCustomersExplanation" class="explanation">Günlük ikram edilecek maksimum müşteri sayısı</div>
+        </div>
+        <div class="form-group">
+            <label for="avgFollowers">Ortalama Takipçi Sayısı
+                <button class="explain-btn" onclick="toggleExplanation('avgFollowersExplanation')">?</button>
+            </label>
+            <input type="number" id="avgFollowers" value="200">
+            <div id="avgFollowersExplanation" class="explanation">Her müşteri için ortalama takipçi sayısı</div>
+        </div>
+        <div class="form-group">
+            <label for="highViews">Yüksek Görüntülenme
+                <button class="explain-btn" onclick="toggleExplanation('highViewsExplanation')">?</button>
+            </label>
+            <input type="number" id="highViews" value="80">
+            <div id="highViewsExplanation" class="explanation">Yüksek performans gösteren müşteri başına ortalama görüntülenme sayısı</div>
+        </div>
+        <div class="form-group">
+            <label for="mediumViews">Orta Görüntülenme
+                <button class="explain-btn" onclick="toggleExplanation('mediumViewsExplanation')">?</button>
+            </label>
+            <input type="number" id="mediumViews" value="30">
+            <div id="mediumViewsExplanation" class="explanation">Orta performans gösteren müşteri başına ortalama görüntülenme sayısı</div>
+        </div>
+        <div class="form-group">
+            <label for="lowViews">Düşük Görüntülenme
+                <button class="explain-btn" onclick="toggleExplanation('lowViewsExplanation')">?</button>
+            </label>
+            <input type="number" id="lowViews" value="15">
+            <div id="lowViewsExplanation" class="explanation">Düşük performans gösteren müşteri başına ortalama görüntülenme sayısı</div>
+        </div>
+        <div class="form-group">
+            <label for="highPercentage">Yüksek Görüntülenme Yüzdesi (%)
+                <button class="explain-btn" onclick="toggleExplanation('highPercentageExplanation')">?</button>
+            </label>
+            <input type="number" step="0.01" id="highPercentage" value="40">
+            <div id="highPercentageExplanation" class="explanation">Yüksek performans gösteren müşteri yüzdesi</div>
+        </div>
+        <div class="form-group">
+            <label for="mediumPercentage">Orta Görüntülenme Yüzdesi (%)
+                <button class="explain-btn" onclick="toggleExplanation('mediumPercentageExplanation')">?</button>
+            </label>
+            <input type="number" step="0.01" id="mediumPercentage" value="40">
+            <div id="mediumPercentageExplanation" class="explanation">Orta performans gösteren müşteri yüzdesi</div>
+        </div>
+        <div class="form-group">
+            <label for="lowPercentage">Düşük Görüntülenme Yüzdesi (%)
+                <button class="explain-btn" onclick="toggleExplanation('lowPercentageExplanation')">?</button>
+            </label>
+            <input type="number" step="0.01" id="lowPercentage" value="20">
+            <div id="lowPercentageExplanation" class="explanation">Düşük performans gösteren müşteri yüzdesi</div>
+        </div>
+        <div class="form-group">
+            <label for="followerRate">Yeni Takipçi Kazanma Oranı (%)
+                <button class="explain-btn" onclick="toggleExplanation('followerRateExplanation')">?</button>
+            </label>
+            <input type="number" step="0.01" id="followerRate" value="0.4">
+            <div id="followerRateExplanation" class="explanation">Görüntülenme başına yeni takipçi oranı</div>
+        </div>
+        <div class="form-group">
+            <label for="decayRate">Etkinlik Azalma Oranı (%)
+                <button class="explain-btn" onclick="toggleExplanation('decayRateExplanation')">?</button>
+            </label>
+            <input type="number" step="0.01" id="decayRate" value="2">
+            <div id="decayRateExplanation" class="explanation">Her gün için etkinlik azalması oranı</div>
+        </div>
+        <button onclick="calculate()">Çalıştır</button>
+        <div class="results" id="results"></div>
+    </div>
+    <script>
+        function toggleExplanation(id) {
+            const explanation = document.getElementById(id);
+            explanation.style.display = explanation.style.display === 'none' || explanation.style.display === '' ? 'block' : 'none';
+        }
+
+        function showProductForm() {
+            document.getElementById('product-form').style.display = 'block';
+            document.getElementById('discount-form').style.display = 'none';
+            document.querySelector('.product-btn').classList.add('active');
+            document.querySelector('.discount-btn').classList.remove('active');
+        }
+
+        function showDiscountForm() {
+            document.getElementById('product-form').style.display = 'none';
+            document.getElementById('discount-form').style.display = 'block';
+            document.querySelector('.product-btn').classList.remove('active');
+            document.querySelector('.discount-btn').classList.add('active');
+        }
+
+        function calculate() {
+            const campaignDays = parseInt(document.getElementById('campaignDays').value);
+            const rewardType = document.querySelector('.product-btn').classList.contains('active') ? 'product' : 'discount';
+            const maxCustomers = parseInt(document.getElementById('maxCustomers').value);
+            const avgFollowers = parseInt(document.getElementById('avgFollowers').value);
+            const highViews = parseInt(document.getElementById('highViews').value);
+            const mediumViews = parseInt(document.getElementById('mediumViews').value);
+            const lowViews = parseInt(document.getElementById('lowViews').value);
+            const highPercentage = parseFloat(document.getElementById('highPercentage').value) / 100;
+            const mediumPercentage = parseFloat(document.getElementById('mediumPercentage').value) / 100;
+            const lowPercentage = parseFloat(document.getElementById('lowPercentage').value) / 100;
+            const followerRate = parseFloat(document.getElementById('followerRate').value) / 100;
+            const decayRate = parseFloat(document.getElementById('decayRate').value) / 100;
+
+            let productCost = 0;
+            let avgBill = 0;
+            let discountRate = 0;
+            if (rewardType === 'product') {
+                productCost = parseFloat(document.getElementById('productCost').value);
+            } else {
+                avgBill = parseFloat(document.getElementById('avgBill').value);
+                discountRate = parseFloat(document.getElementById('discountRate').value) / 100;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            let totalViews = 0;
+            let totalFollowers = 0;
+            let totalCost = 0;
+
+            for (let day = 1; day <= campaignDays; day++) {
+                const high = highViews * maxCustomers * highPercentage * Math.pow((1 - decayRate), day - 1);
+                const medium = mediumViews * maxCustomers * mediumPercentage * Math.pow((1 - decayRate), day - 1);
+                const low = lowViews * maxCustomers * lowPercentage * Math.pow((1 - decayRate), day - 1);
+                
+                const dailyViews = high + medium + low;
+                const dailyFollowers = dailyViews * followerRate;
+                let dailyCost = 0;
+
+                if (rewardType === 'product') {
+                    dailyCost = productCost * maxCustomers;
+                } else {
+                    dailyCost = avgBill * discountRate * maxCustomers;
+                }
+
+                totalViews += dailyViews;
+                totalFollowers += dailyFollowers;
+                totalCost += dailyCost;
+
+                resultsDiv.innerHTML += `
+                    <div class="result-item">
+                        <strong>${day}. Gün</strong><br>
+                        Günlük Maliyet: ${dailyCost.toFixed(2)} TL<br>
+                        Günlük Görüntülenme: ${Math.round(dailyViews)}<br>
+                        Günlük Yeni Takipçi: ${Math.round(dailyFollowers)}
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML += `
+                <div class="result-item">
+                    <strong>Toplam</strong><br>
+                    Toplam Maliyet: ${totalCost.toFixed(2)} TL<br>
+                    Toplam Görüntülenme: ${Math.round(totalViews)}<br>
+                    Toplam Yeni Takipçi: ${Math.round(totalFollowers)}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
