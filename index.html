@@ -77,7 +77,7 @@
             color: white;
         }
         .reward-buttons .discount-btn {
-            background-color: #6cc0c0;
+            background-color: #7daedb;
             color: white;
         }
         .reward-buttons button.active {
@@ -198,186 +198,187 @@
             </label>
             <input type="number" step="0.01" id="lowPercentage" value="20">
             <div id="lowPercentageExplanation" class="explanation">Düşük performans gösteren müşteri yüzdesi</div>
-            <div class="form-group">
-                <label for="followerRate">Yeni Takipçi Kazanma Oranı (%)
-                    <button class="explain-btn" onclick="toggleExplanation('followerRateExplanation')">?</button>
-                </label>
-                <input type="number" step="0.01" id="followerRate" value="0.4">
-                <div id="followerRateExplanation" class="explanation">Görüntülenme başına yeni takipçi oranı</div>
-            </div>
-            <div class="form-group">
-                <label for="decayRate">Etkinlik Azalma Oranı (%)
-                    <button class="explain-btn" onclick="toggleExplanation('decayRateExplanation')">?</button>
-                </label>
-                <input type="number" step="0.01" id="decayRate" value="2">
-                <div id="decayRateExplanation" class="explanation">Her gün için etkinlik azalması oranı</div>
-            </div>
-            <button onclick="calculate()">Çalıştır</button>
-            <button onclick="downloadExcel()">Excel Olarak İndir</button>
-            <div class="results" id="results"></div>
         </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
-        <script>
-            function toggleExplanation(id) {
-                const explanation = document.getElementById(id);
-                explanation.style.display = explanation.style.display === 'none' || explanation.style.display === '' ? 'block' : 'none';
+        <div class="form-group">
+            <label for="followerRate">Yeni Takipçi Kazanma Oranı (%)
+                <button class="explain-btn" onclick="toggleExplanation('followerRateExplanation')">?</button>
+            </label>
+            <input type="number" step="0.01" id="followerRate" value="0.4">
+            <div id="followerRateExplanation" class="explanation">Görüntülenme başına yeni takipçi oranı</div>
+        </div>
+        <div class="form-group">
+            <label for="decayRate">Etkinlik Azalma Oranı (%)
+                <button class="explain-btn" onclick="toggleExplanation('decayRateExplanation')">?</button>
+            </label>
+            <input type="number" step="0.01" id="decayRate" value="2">
+            <div id="decayRateExplanation" class="explanation">Her gün için etkinlik azalması oranı</div>
+        </div>
+        <button onclick="calculate()">Çalıştır</button>
+        <button onclick="downloadExcel()">Excel Olarak İndir</button>
+        <div class="results" id="results"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+    <script>
+        function toggleExplanation(id) {
+            const explanation = document.getElementById(id);
+            explanation.style.display = explanation.style.display === 'none' || explanation.style.display === '' ? 'block' : 'none';
+        }
+
+        function showProductForm() {
+            document.getElementById('product-form').style.display = 'block';
+            document.getElementById('discount-form').style.display = 'none';
+            document.querySelector('.product-btn').classList.add('active');
+            document.querySelector('.discount-btn').classList.remove('active');
+        }
+
+        function showDiscountForm() {
+            document.getElementById('product-form').style.display = 'none';
+            document.getElementById('discount-form').style.display = 'block';
+            document.querySelector('.product-btn').classList.remove('active');
+            document.querySelector('.discount-btn').classList.add('active');
+        }
+
+        function calculate() {
+            const campaignDays = parseInt(document.getElementById('campaignDays').value);
+            const rewardType = document.querySelector('.product-btn').classList.contains('active') ? 'product' : 'discount';
+            const maxCustomers = parseInt(document.getElementById('maxCustomers').value);
+            const avgFollowers = parseInt(document.getElementById('avgFollowers').value);
+            const highViews = parseInt(document.getElementById('highViews').value);
+            const mediumViews = parseInt(document.getElementById('mediumViews').value);
+            const lowViews = parseInt(document.getElementById('lowViews').value);
+            const highPercentage = parseFloat(document.getElementById('highPercentage').value) / 100;
+            const mediumPercentage = parseFloat(document.getElementById('mediumPercentage').value) / 100;
+            const lowPercentage = parseFloat(document.getElementById('lowPercentage').value) / 100;
+            const followerRate = parseFloat(document.getElementById('followerRate').value) / 100;
+            const decayRate = parseFloat(document.getElementById('decayRate').value) / 100;
+
+            let productCost = 0;
+            let avgBill = 0;
+            let discountRate = 0;
+            if (rewardType === 'product') {
+                productCost = parseFloat(document.getElementById('productCost').value);
+            } else {
+                avgBill = parseFloat(document.getElementById('avgBill').value);
+                discountRate = parseFloat(document.getElementById('discountRate').value) / 100;
             }
-    
-            function showProductForm() {
-                document.getElementById('product-form').style.display = 'block';
-                document.getElementById('discount-form').style.display = 'none';
-                document.querySelector('.product-btn').classList.add('active');
-                document.querySelector('.discount-btn').classList.remove('active');
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            let totalViews = 0;
+            let totalFollowers = 0;
+            let totalCost = 0;
+
+            let analysisResults = [];
+            let inputValues = {
+                'Kampanya Süresi (Gün)': campaignDays,
+                'Günlük Maksimum Müşteri': maxCustomers,
+                'Ortalama Takipçi Sayısı': avgFollowers,
+                'Yüksek Görüntülenme': highViews,
+                'Orta Görüntülenme': mediumViews,
+                'Düşük Görüntülenme': lowViews,
+                'Yüksek Görüntülenme Yüzdesi (%)': highPercentage * 100,
+                'Orta Görüntülenme Yüzdesi (%)': mediumPercentage * 100,
+                'Düşük Görüntülenme Yüzdesi (%)': lowPercentage * 100,
+                'Yeni Takipçi Kazanma Oranı (%)': followerRate * 100,
+                'Etkinlik Azalma Oranı (%)': decayRate * 100
+            };
+            if (rewardType === 'product') {
+                inputValues['İkram Edilecek Ürün Maliyeti (TL)'] = productCost;
+            } else {
+                inputValues['Tahmini Ortalama Hesap (TL)'] = avgBill;
+                inputValues['İndirim Oranı (%)'] = discountRate * 100;
             }
-    
-            function showDiscountForm() {
-                document.getElementById('product-form').style.display = 'none';
-                document.getElementById('discount-form').style.display = 'block';
-                document.querySelector('.product-btn').classList.remove('active');
-                document.querySelector('.discount-btn').classList.add('active');
-            }
-    
-            function calculate() {
-                const campaignDays = parseInt(document.getElementById('campaignDays').value);
-                const rewardType = document.querySelector('.product-btn').classList.contains('active') ? 'product' : 'discount';
-                const maxCustomers = parseInt(document.getElementById('maxCustomers').value);
-                const avgFollowers = parseInt(document.getElementById('avgFollowers').value);
-                const highViews = parseInt(document.getElementById('highViews').value);
-                const mediumViews = parseInt(document.getElementById('mediumViews').value);
-                const lowViews = parseInt(document.getElementById('lowViews').value);
-                const highPercentage = parseFloat(document.getElementById('highPercentage').value) / 100;
-                const mediumPercentage = parseFloat(document.getElementById('mediumPercentage').value) / 100;
-                const lowPercentage = parseFloat(document.getElementById('lowPercentage').value) / 100;
-                const followerRate = parseFloat(document.getElementById('followerRate').value) / 100;
-                const decayRate = parseFloat(document.getElementById('decayRate').value) / 100;
-    
-                let productCost = 0;
-                let avgBill = 0;
-                let discountRate = 0;
+
+            for (let day = 1; day <= campaignDays; day++) {
+                const high = highViews * maxCustomers * highPercentage * Math.pow((1 - decayRate), day - 1);
+                const medium = mediumViews * maxCustomers * mediumPercentage * Math.pow((1 - decayRate), day - 1);
+                const low = lowViews * maxCustomers * lowPercentage * Math.pow((1 - decayRate), day - 1);
+                
+                const dailyViews = high + medium + low;
+                const dailyFollowers = dailyViews * followerRate;
+                let dailyCost = 0;
+
                 if (rewardType === 'product') {
-                    productCost = parseFloat(document.getElementById('productCost').value);
+                    dailyCost = productCost * maxCustomers;
                 } else {
-                    avgBill = parseFloat(document.getElementById('avgBill').value);
-                    discountRate = parseFloat(document.getElementById('discountRate').value) / 100;
+                    dailyCost = avgBill * discountRate * maxCustomers;
                 }
-    
-                const resultsDiv = document.getElementById('results');
-                resultsDiv.innerHTML = '';
-    
-                let totalViews = 0;
-                let totalFollowers = 0;
-                let totalCost = 0;
-    
-                let analysisResults = [];
-                let inputValues = {
-                    'Kampanya Süresi (Gün)': campaignDays,
-                    'Günlük Maksimum Müşteri': maxCustomers,
-                    'Ortalama Takipçi Sayısı': avgFollowers,
-                    'Yüksek Görüntülenme': highViews,
-                    'Orta Görüntülenme': mediumViews,
-                    'Düşük Görüntülenme': lowViews,
-                    'Yüksek Görüntülenme Yüzdesi (%)': highPercentage * 100,
-                    'Orta Görüntülenme Yüzdesi (%)': mediumPercentage * 100,
-                    'Düşük Görüntülenme Yüzdesi (%)': lowPercentage * 100,
-                    'Yeni Takipçi Kazanma Oranı (%)': followerRate * 100,
-                    'Etkinlik Azalma Oranı (%)': decayRate * 100
-                };
-                if (rewardType === 'product') {
-                    inputValues['İkram Edilecek Ürün Maliyeti (TL)'] = productCost;
-                } else {
-                    inputValues['Tahmini Ortalama Hesap (TL)'] = avgBill;
-                    inputValues['İndirim Oranı (%)'] = discountRate * 100;
-                }
-    
-                for (let day = 1; day <= campaignDays; day++) {
-                    const high = highViews * maxCustomers * highPercentage * Math.pow((1 - decayRate), day - 1);
-                    const medium = mediumViews * maxCustomers * mediumPercentage * Math.pow((1 - decayRate), day - 1);
-                    const low = lowViews * maxCustomers * lowPercentage * Math.pow((1 - decayRate), day - 1);
-                    
-                    const dailyViews = high + medium + low;
-                    const dailyFollowers = dailyViews * followerRate;
-                    let dailyCost = 0;
-    
-                    if (rewardType === 'product') {
-                        dailyCost = productCost * maxCustomers;
-                    } else {
-                        dailyCost = avgBill * discountRate * maxCustomers;
-                    }
-    
-                    totalViews += dailyViews;
-                    totalFollowers += dailyFollowers;
-                    totalCost += dailyCost;
-    
-                    analysisResults.push({
-                        'Gün': day,
-                        'Günlük Maliyet (TL)': dailyCost.toFixed(2),
-                        'Günlük Görüntülenme': Math.round(dailyViews),
-                        'Günlük Yeni Takipçi': Math.round(dailyFollowers)
-                    });
-    
-                    resultsDiv.innerHTML += `
-                        <div class="result-item">
-                            <strong>${day}. Gün</strong><br>
-                            Günlük Maliyet: ${dailyCost.toFixed(2)} TL<br>
-                            Günlük Görüntülenme: ${Math.round(dailyViews)}<br>
-                            Günlük Yeni Takipçi: ${Math.round(dailyFollowers)}
-                        </div>
-                    `;
-                }
-    
+
+                totalViews += dailyViews;
+                totalFollowers += dailyFollowers;
+                totalCost += dailyCost;
+
+                analysisResults.push({
+                    'Gün': day,
+                    'Günlük Maliyet (TL)': dailyCost.toFixed(2),
+                    'Günlük Görüntülenme': Math.round(dailyViews),
+                    'Günlük Yeni Takipçi': Math.round(dailyFollowers)
+                });
+
                 resultsDiv.innerHTML += `
                     <div class="result-item">
-                        <strong>Toplam</strong><br>
-                        Toplam Maliyet: ${totalCost.toFixed(2)} TL<br>
-                        Toplam Görüntülenme: ${Math.round(totalViews)}<br>
-                        Toplam Yeni Takipçi: ${Math.round(totalFollowers)}
+                        <strong>${day}. Gün</strong><br>
+                        Günlük Maliyet: ${dailyCost.toFixed(2)} TL<br>
+                        Günlük Görüntülenme: ${Math.round(dailyViews)}<br>
+                        Günlük Yeni Takipçi: ${Math.round(dailyFollowers)}
                     </div>
                 `;
-    
-                window.analysisResults = analysisResults;
-                window.inputValues = inputValues;
-                window.totalResults = {
-                    'Toplam Maliyet (TL)': totalCost.toFixed(2),
-                    'Toplam Görüntülenme': Math.round(totalViews),
-                    'Toplam Yeni Takipçi': Math.round(totalFollowers)
-                };
             }
-    
-            function downloadExcel() {
-                const analysisResults = window.analysisResults || [];
-                const inputValues = window.inputValues || {};
-                const totalResults = window.totalResults || {};
-    
-                if (analysisResults.length === 0) {
-                    alert('Lütfen önce Çalıştır butonuna basarak hesaplama yapınız.');
-                    return;
-                }
-    
-                const ws_data = [
-                    ["Girilen Veriler"],
-                    ...Object.entries(inputValues).map(([key, value]) => [key, value]),
-                    [],
-                    ["Günlük Analiz Sonuçları"],
-                    ...Object.keys(analysisResults[0]).map(key => [key, ...analysisResults.map(res => res[key])]),
-                    [],
-                    ["Toplam Sonuçlar"],
-                    ...Object.entries(totalResults).map(([key, value]) => [key, value])
-                ];
-    
-                const ws = XLSX.utils.aoa_to_sheet(ws_data);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Analiz Sonuçları');
-    
-                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-                function s2ab(s) {
-                    const buf = new ArrayBuffer(s.length);
-                    const view = new Uint8Array(buf);
-                    for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-                    return buf;
-                }
-                saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), 'Kampanya_Analizi.xlsx');
+
+            resultsDiv.innerHTML += `
+                <div class="result-item">
+                    <strong>Toplam</strong><br>
+                    Toplam Maliyet: ${totalCost.toFixed(2)} TL<br>
+                    Toplam Görüntülenme: ${Math.round(totalViews)}<br>
+                    Toplam Yeni Takipçi: ${Math.round(totalFollowers)}
+                </div>
+            `;
+
+            window.analysisResults = analysisResults;
+            window.inputValues = inputValues;
+            window.totalResults = {
+                'Toplam Maliyet (TL)': totalCost.toFixed(2),
+                'Toplam Görüntülenme': Math.round(totalViews),
+                'Toplam Yeni Takipçi': Math.round(totalFollowers)
+            };
+        }
+
+        function downloadExcel() {
+            const analysisResults = window.analysisResults || [];
+            const inputValues = window.inputValues || {};
+            const totalResults = window.totalResults || {};
+
+            if (analysisResults.length === 0) {
+                alert('Lütfen önce Çalıştır butonuna basarak hesaplama yapınız.');
+                return;
             }
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    </body>
+
+            const ws_data = [
+                ["Girilen Veriler"],
+                ...Object.entries(inputValues).map(([key, value]) => [key, value]),
+                [],
+                ["Günlük Analiz Sonuçları"],
+                ...Object.keys(analysisResults[0]).map(key => [key, ...analysisResults.map(res => res[key])]),
+                [],
+                ["Toplam Sonuçlar"],
+                ...Object.entries(totalResults).map(([key, value]) => [key, value])
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Analiz Sonuçları');
+
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                return buf;
+            }
+            saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), 'Kampanya_Analizi.xlsx');
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</body>
 </html>
