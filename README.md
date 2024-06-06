@@ -1,2 +1,1 @@
-24 Yemek şirketinin kullanabileceği araçlardır.
-# 24Yemek
+24 Yemek şirketinin kullanabileceği araçlar.
